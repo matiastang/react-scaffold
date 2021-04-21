@@ -1,0 +1,73 @@
+{
+  "name": "react-scaffold",
+  "version": "1.0.0",
+  "description": "React脚手架工程",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs",
+    "lint": "eslint --ext .js --ext .ts --ext .jsx --ext .tsx src/",
+    "build": "webpack --mode=production",
+    "start": "webpack-dev-server --open chrome --hot --mode=development",
+    "watch": "webpack --watch",
+    "test": "jest --runInBand --forceExit --colors",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:e2e": "jest --runInBand --config ./test/jest-e2e.json",
+    "debugger": "node --inspect-brk ./node_modules/jest/bin/jest --runInBand --no-cache --no-watchman"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matiastang/react-scaffold.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/matiastang/react-scaffold/issues"
+  },
+  "homepage": "https://github.com/matiastang/react-scaffold#readme",
+  "devDependencies": {
+    "@babel/preset-env": "^7.13.15",
+    "@babel/preset-react": "^7.13.13",
+    "@babel/preset-typescript": "^7.13.0",
+    "@svgr/webpack": "^5.5.0",
+    "@teamsupercell/typings-for-css-modules-loader": "^2.5.1",
+    "@types/node": "^14.14.41",
+    "@types/react": "^17.0.3",
+    "@types/react-dom": "^17.0.3",
+    "@types/react-router": "^5.1.13",
+    "@types/react-router-config": "^5.0.2",
+    "@types/react-router-dom": "^5.1.7",
+    "@typescript-eslint/eslint-plugin": "^4.22.0",
+    "@typescript-eslint/parser": "^4.22.0",
+    "babel-loader": "^8.2.2",
+    "clean-webpack-plugin": "^4.0.0-alpha.0",
+    "css-loader": "^5.2.4",
+    "eslint": "^7.24.0",
+    "eslint-friendly-formatter": "^4.0.1",
+    "eslint-loader": "^4.0.2",
+    "eslint-webpack-plugin": "^2.5.4",
+    "fork-ts-checker-webpack-plugin": "^6.2.1",
+    "html-webpack-plugin": "^5.3.1",
+    "postcss-loader": "^5.2.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-hot-loader": "^4.13.0",
+    "react-router": "^5.2.0",
+    "react-router-config": "^5.1.1",
+    "react-router-dom": "^5.2.0",
+    "sass-loader": "^11.0.1",
+    "style-loader": "^2.0.0",
+    "ts-loader": "^9.0.0",
+    "typescript": "^4.2.4",
+    "vuepress": "^1.8.2",
+    "webpack": "^5.34.0",
+    "webpack-cli": "3.3.12",
+    "webpack-dev-server": "^3.11.2",
+    "webpack-glsl-minify": "^1.4.2"
+  }
+}
