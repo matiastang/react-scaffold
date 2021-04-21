@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2020-11-24 17:24:53
  * @LastEditors: tangdaoyong
- * @LastEditTime: 2021-04-21 16:35:54
+ * @LastEditTime: 2021-04-21 17:54:10
  * @Description: webpack配置
  */
 var path = require('path');
@@ -36,13 +36,12 @@ const ESLintOptions = {
     // eslintPath: '',// eslint将用于皮棉的实例的路径。如果eslintPath是官方eslint之类的文件夹，请指定一个formatter选项。现在您无需安装eslint。
     extensions: ['js'], // 指定应检查的扩展名。
     exclude: ['node_modules'], // 指定要排除的文件和/或目录。必须相对于options.context
-    files: [path.resolve(__dirname, 'src')],// 指定目录，文件或全局名称。必须相对于options.context。目录遍历遍历以寻找匹配的文件options.extensions。文件和全局模式忽略options.extensions。
-    fix: true,// 将启用ESLint自动修复功能。
-    formatter: require('eslint-friendly-formatter'), // 接受一个具有一个参数的函数：eslint消息（对象）的数组。该函数必须以字符串形式返回输出。您可以使用官方的eslint格式化程序。
+    files: [path.resolve(__dirname, 'src')], // 指定目录，文件或全局名称。必须相对于options.context。目录遍历遍历以寻找匹配的文件options.extensions。文件和全局模式忽略options.extensions。
+    fix: true, // 将启用ESLint自动修复功能。
+    formatter: require('eslint-friendly-formatter') // 接受一个具有一个参数的函数：eslint消息（对象）的数组。该函数必须以字符串形式返回输出。您可以使用官方的eslint格式化程序。
     // lintDirtyModulesOnly: false, // 仅清除更改的文件，在启动时跳过lint。
     // threads: false, // 将在线程池中运行lint任务。除非指定数字，否则池大小是自动的。
-}
-
+};
 
 module.exports = {
     entry: {
@@ -52,9 +51,9 @@ module.exports = {
     plugins: [
         // 为了避免webpack因为生成众多的scss.d.ts而导致速度变慢
         // new webpack.WatchIgnorePlugin([/\.css$/]),
-        // new webpack.WatchIgnorePlugin([
-        //     /css\.d\.ts$/
-        // ]),
+        new webpack.WatchIgnorePlugin({
+            paths: [/.css\.d\.ts$/, /.scss\.d\.ts$/, /.less\.d\.ts$/]
+        }),
         new CleanWebpackPlugin({ cleanStaleWebpackAssets: false }),
         new HtmlWebpackPlugin({ // 处理 html，配置多个会生成多个 html
             title: 'React学习', // html的标题
@@ -73,7 +72,9 @@ module.exports = {
                 collapseWhitespace: true // 删除空白符与换行符
             }
         }),
-        new ForkTsCheckerWebpackPlugin(),
+        // new ForkTsCheckerWebpackPlugin({
+        //     eslint: ESLintOptions
+        // }),
         new ESLintWebpackPlugin(ESLintOptions)
     ],
     output: {
@@ -113,26 +114,28 @@ module.exports = {
                     loader: 'ts-loader',
                     options: {
                         // disable type checker - we will use it in fork plugin
-                        transpileOnly: true
+                        // transpileOnly: true
                     }
                 }],
                 exclude: /node_modules/
             },
             {
-                test: /\.css$/, // 匹配 css 文件
+                test: /\.css$/i, // 匹配 css 文件
                 include: /src/,
                 use: [
-                    "style-loader",
+                    'style-loader',
+                    '@teamsupercell/typings-for-css-modules-loader',
+                    // {
+                    //     loader: '@teamsupercell/typings-for-css-modules-loader',
+                    //     options: {
+                    //         // pass all the options for `css-loader` to `css-loader`, eg.
+                    //         // namedExport: true,
+                    //         // modules: true
+                    //         formatter: 'prettier'
+                    //     }
+                    // },
                     {
-                      loader: "@teamsupercell/typings-for-css-modules-loader",
-                      options: {
-                        // pass all the options for `css-loader` to `css-loader`, eg.
-                        namedExport: true,
-                        modules: true
-                      }
-                    },
-                    {
-                        loader: "css-loader",
+                        loader: 'css-loader',
                         options: {
                             modules: true
                         }
@@ -145,7 +148,7 @@ module.exports = {
                 use: [{
                     loader: 'style-loader'
                 }, {
-                    loader: '@teamsupercell/typings-for-css-modules-loader',// typings-for-css-modules-loader让我们可以像使用js模块一样引入css和scss文件。
+                    loader: '@teamsupercell/typings-for-css-modules-loader', // typings-for-css-modules-loader让我们可以像使用js模块一样引入css和scss文件。
                     options: {
                         formatter: 'prettier'
                     }

@@ -36,7 +36,7 @@ import { GLPointColors } from '../WebGL';
 // routes.push(G2Routers);
 
 const Root: FC = () => {
-    let a    
+  
     return (
         <HashRouter>
             <Switch>

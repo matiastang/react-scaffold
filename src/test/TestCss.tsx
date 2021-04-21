@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2021-04-20 17:23:32
  * @LastEditors: tangdaoyong
- * @LastEditTime: 2021-04-20 17:52:21
+ * @LastEditTime: 2021-04-21 17:15:49
  * @Description: Css测试
  */
 import React from 'react';
@@ -19,6 +19,6 @@ const TestCss = () => {
             <div className={lessStyles.testCss}>Less测试，字体颜色为灰色</div>
         </>
     );
-}
+};
 
 export default hot(TestCss);
