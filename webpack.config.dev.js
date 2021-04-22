@@ -1,16 +1,16 @@
 /*
  * @Author: tangdaoyong
- * @Date: 2020-11-24 17:24:53
+ * @Date: 2021-04-22 17:28:56
  * @LastEditors: tangdaoyong
- * @LastEditTime: 2021-04-22 14:41:03
- * @Description: webpack配置
+ * @LastEditTime: 2021-04-22 17:36:21
+ * @Description: webpack开发配置
  */
 var path = require('path');
 var webpack = require('webpack');
 // 引入插件
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+// const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const ESLintWebpackPlugin = require('eslint-webpack-plugin');// eslint
 
 // 常量
@@ -32,8 +32,35 @@ const ESLintOptions = {
     // lintDirtyModulesOnly: false, // 仅清除更改的文件，在启动时跳过lint。
     // threads: false, // 将在线程池中运行lint任务。除非指定数字，否则池大小是自动的。
 };
+/*
+[延迟类型检查](https://github.com/TypeStrong/fork-ts-checker-webpack-plugin#plugin-hooks)
+const webpack = require('webpack');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
-module.exports = {
+const compiler = webpack({
+  // ... webpack config
+});
+
+// optionally add the plugin to the compiler
+// **don't do this if already added through configuration**
+new ForkTsCheckerWebpackPlugin().apply(compiler);
+
+// now get the plugin hooks from compiler
+const hooks = ForkTsCheckerWebpackPlugin.getCompilerHooks(compiler);
+
+// say we want to show some message when plugin is waiting for issues results
+hooks.waiting.tap('yourListenerName', () => {
+  console.log('waiting for issues');
+});
+*/
+
+// require the plugin
+/*
+我正在尝试使用forkTsCheckerServiceBeforeStart钩子将类型检查推迟到编译完成之后，以便拾取由加载程序动态生成的类型。在这种情况下，编译将在forkTsCheckerServiceBeforeStart解决之前完成。现在this.compilationDone将错误地设置为false，从而导致构建无限期挂起。
+*/
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+// setup compiler with the plugin
+const compiler = webpack({
     entry: {
         app: ENTRYPATH
     },
@@ -183,4 +210,41 @@ module.exports = {
         historyApiFallback: true, // 该选项的作用所有的404都连接到index.html
         compress: true // 压缩
     }
-};
+});
+// Optionally add the plugin to the compiler
+// **Don't do this if already added through configuration**
+new ForkTsCheckerWebpackPlugin({
+    async: true,
+    eslint: ESLintOptions
+}).apply(compiler);
+// Now get the plugin hooks from compiler
+const tsCheckerHooks = ForkTsCheckerWebpackPlugin.getCompilerHooks(compiler);
+// These hooks provide access to different events
+// =================================================== //
+// The properties of tsCheckerHooks corresponds to the //
+// Hook Access Key of the table above.                 //
+// =================================================== //
+// Example, if we want to run some code when plugin has received diagnostics
+/*
+start: any;
+waiting: SyncHook<any, any, any>;
+canceled: SyncHook<any, any, any>;
+error: SyncHook<Error, any, any>;
+issues: any;
+*/
+tsCheckerHooks.start.tap('yourListenerName', () => {
+    console.log(start);
+});
+tsCheckerHooks.waiting.tap('yourListenerName', () => {
+    console.log('waiting for typecheck results');
+});
+tsCheckerHooks.canceled.tap('yourListenerName', () => {
+    console.log('canceled');
+});
+tsCheckerHooks.error.tap('yourListenerName', (error) => {
+    console.log('error');
+    console.log(error);
+});
+tsCheckerHooks.issues.tap('yourListenerName', () => {
+    console.log('issues');
+});

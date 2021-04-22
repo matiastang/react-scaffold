@@ -1,6 +1,7 @@
 <!-- TOC -->
 
 - [React脚手架工程](#react脚手架工程)
+    - [重要依赖](#重要依赖)
     - [目录结构](#目录结构)
         - [.history(.gitignore忽略)](#historygitignore忽略)
         - [dist](#dist)
@@ -26,6 +27,25 @@
 
 <!-- /TOC -->
 # React脚手架工程
+
+`React`脚手架工程，`typescript`、`less`、`pnpm`
+
+本地环境：
+
+* `node v14.15.0`
+
+## 重要依赖
+
+* `react17`
+* `react-router5`
+* `webpack5`
+* `antd4`
+* `eslint-webpack-plugin`替代`eslint-loader`
+* `typescript4`
+* `@teamsupercell/typings-for-css-modules-loader`动态生成样式声明文件(`.d.ts`)
+* `fork-ts-checker-webpack-plugin`延迟检查、加快编译
+* `node v14.15.0`使用`n`或`nvm`管理`node`版本
+* `nrm`切换源
 
 ## 目录结构
 
