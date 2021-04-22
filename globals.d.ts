@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2020-12-17 15:55:18
  * @LastEditors: tangdaoyong
- * @LastEditTime: 2021-04-20 16:33:15
+ * @LastEditTime: 2021-04-22 10:30:22
  * @Description: ts配置文件
  */
 declare module '*.module.css' {
@@ -20,7 +20,16 @@ declare module '*.module.scss' {
     export default classes;
 }
 
+// declare module '*.css' {
+//     const classes: { readonly [key: string]: string };
+//     export default classes;
+// }
 // declare module '*.scss' {
+//     const classes: { readonly [key: string]: string };
+//     export default classes;
+// }
+
+// declare module '*.less' {
 //     const classes: { readonly [key: string]: string };
 //     export default classes;
 // }

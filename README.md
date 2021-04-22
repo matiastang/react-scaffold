@@ -21,6 +21,8 @@
     - [注意](#注意)
         - [webpack 5](#webpack-5)
         - [eslint-loader](#eslint-loader)
+        - [@teamsupercell/typings-for-css-modules-loader](#teamsupercelltypings-for-css-modules-loader)
+        - [sass-loader](#sass-loader)
 
 <!-- /TOC -->
 # React脚手架工程
@@ -107,3 +109,11 @@
 ```c
 eslint-loader@4.0.2: This loader has been deprecated. Please use eslint-webpack-plugin
 ```
+
+### @teamsupercell/typings-for-css-modules-loader
+
+使用`@teamsupercell/typings-for-css-modules-loader`自动生成`.css`、`.scss`、`.less`的`.d.ts`类型声明文件。需要`.tsx`和`.css`、`.scss`、`.less`文件在同一级目录下。
+
+### sass-loader
+
+使用`sass-loader`处理`.scss`、`.less`文件时，需要添加`node-sass`包。
