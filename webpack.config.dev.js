@@ -2,16 +2,18 @@
  * @Author: tangdaoyong
  * @Date: 2021-04-22 17:28:56
  * @LastEditors: tangdaoyong
- * @LastEditTime: 2021-04-22 17:36:21
+ * @LastEditTime: 2021-04-23 16:03:52
  * @Description: webpack开发配置
  */
-var path = require('path');
-var webpack = require('webpack');
+const path = require('path');
+const webpack = require('webpack');
 // 引入插件
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-// const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
-const ESLintWebpackPlugin = require('eslint-webpack-plugin');// eslint
+/*
+使用forkTsCheckerServiceBeforeStart钩子将类型检查推迟到编译完成之后，以便拾取由加载程序动态生成的类型。在这种情况下，编译将在forkTsCheckerServiceBeforeStart解决之前完成。
+*/
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 // 常量
 
@@ -32,6 +34,7 @@ const ESLintOptions = {
     // lintDirtyModulesOnly: false, // 仅清除更改的文件，在启动时跳过lint。
     // threads: false, // 将在线程池中运行lint任务。除非指定数字，否则池大小是自动的。
 };
+
 /*
 [延迟类型检查](https://github.com/TypeStrong/fork-ts-checker-webpack-plugin#plugin-hooks)
 const webpack = require('webpack');
@@ -55,10 +58,6 @@ hooks.waiting.tap('yourListenerName', () => {
 */
 
 // require the plugin
-/*
-我正在尝试使用forkTsCheckerServiceBeforeStart钩子将类型检查推迟到编译完成之后，以便拾取由加载程序动态生成的类型。在这种情况下，编译将在forkTsCheckerServiceBeforeStart解决之前完成。现在this.compilationDone将错误地设置为false，从而导致构建无限期挂起。
-*/
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 // setup compiler with the plugin
 const compiler = webpack({
     entry: {
@@ -67,7 +66,6 @@ const compiler = webpack({
     devtool: 'inline-source-map',
     plugins: [
         // 为了避免webpack因为生成众多的scss.d.ts而导致速度变慢
-        // new webpack.WatchIgnorePlugin([/\.css$/]),
         // new webpack.WatchIgnorePlugin({
         //     paths: [/.css\.d\.ts$/, /.scss\.d\.ts$/, /.less\.d\.ts$/]
         // }),
@@ -88,13 +86,7 @@ const compiler = webpack({
                 removeRedundantAttributes: true, // 删除多余的属性
                 collapseWhitespace: true // 删除空白符与换行符
             }
-        }),
-        new ForkTsCheckerWebpackPlugin({
-            async: true,
-            eslint: ESLintOptions
         })
-        // ,
-        // new ESLintWebpackPlugin(ESLintOptions)
     ],
     output: {
         path: OUTPUTPATH,      // 出口路径
@@ -213,6 +205,14 @@ const compiler = webpack({
 });
 // Optionally add the plugin to the compiler
 // **Don't do this if already added through configuration**
+/*
+async?: boolean;
+typescript?: TypeScriptReporterOptions;
+eslint?: EsLintReporterOptions;
+formatter?: FormatterOptions;
+issue?: IssueOptions;
+logger?: LoggerOptions;
+*/
 new ForkTsCheckerWebpackPlugin({
     async: true,
     eslint: ESLintOptions
@@ -226,14 +226,15 @@ const tsCheckerHooks = ForkTsCheckerWebpackPlugin.getCompilerHooks(compiler);
 // =================================================== //
 // Example, if we want to run some code when plugin has received diagnostics
 /*
-start: any;
-waiting: SyncHook<any, any, any>;
-canceled: SyncHook<any, any, any>;
-error: SyncHook<Error, any, any>;
-issues: any;
+挂钩键	类型	参量	描述
+start	AsyncSeriesWaterfallHook	change, compilation	开始检查编译的问题。这是一个异步瀑布钩，因此您可以修改已更改和已删除文件的列表或延迟服务的启动。
+waiting	SyncHook	compilation	等待问题检查。
+canceled	SyncHook	compilation	检查编译的问题已被取消。
+error	SyncHook	compilation	问题检查期间发生错误。
+issues	SyncWaterfallHook	issues, compilation	已收到问题，将予以报告。这是一个瀑布钩，因此您可以修改收到的问题列表。
 */
 tsCheckerHooks.start.tap('yourListenerName', () => {
-    console.log(start);
+    console.log('start');
 });
 tsCheckerHooks.waiting.tap('yourListenerName', () => {
     console.log('waiting for typecheck results');
@@ -248,3 +249,5 @@ tsCheckerHooks.error.tap('yourListenerName', (error) => {
 tsCheckerHooks.issues.tap('yourListenerName', () => {
     console.log('issues');
 });
+
+module.exports = ForkTsCheckerWebpackPlugin;

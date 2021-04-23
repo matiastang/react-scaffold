@@ -2,16 +2,22 @@
  * @Author: tangdaoyong
  * @Date: 2020-11-24 17:24:53
  * @LastEditors: tangdaoyong
- * @LastEditTime: 2021-04-22 14:41:03
+ * @LastEditTime: 2021-04-23 17:05:12
  * @Description: webpack配置
  */
-var path = require('path');
-var webpack = require('webpack');
+const path = require('path');
 // 引入插件
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
-const ESLintWebpackPlugin = require('eslint-webpack-plugin');// eslint
+const ForkTsCheckerNotifierWebpackPlugin = require('fork-ts-checker-notifier-webpack-plugin');
+/*
+parallel-webpack：它允许在一个 worker 池中运行 compilation。并行构建
+cache-loader：可以在多个 compilation 之间共享缓存。
+生成 HTML 模版 (html-webpack-plugin)
+自动压缩图片 (imagemin-webpack-plugin) 
+*/
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 // 常量
 
@@ -34,17 +40,31 @@ const ESLintOptions = {
 };
 
 module.exports = {
+    mode: process.env.NODE_ENV,
     entry: {
         app: ENTRYPATH
     },
     devtool: 'inline-source-map',
     plugins: [
         // 为了避免webpack因为生成众多的scss.d.ts而导致速度变慢
-        // new webpack.WatchIgnorePlugin([/\.css$/]),
         // new webpack.WatchIgnorePlugin({
         //     paths: [/.css\.d\.ts$/, /.scss\.d\.ts$/, /.less\.d\.ts$/]
         // }),
         new CleanWebpackPlugin({ cleanStaleWebpackAssets: false }),
+        /*
+        [fork-ts-checker-webpack-plugin报错信息不及时](https://segmentfault.com/q/1010000019545436)
+        fork一个进程进行检查，并设置async为false，将错误信息反馈给webpack
+        因为fork-ts-checker-webpack-plugin是在单独的进程跑的，所以它的错误或警告信息是异步回传给到webpack进程的。而当webpack自己处理完转译任务后，会将结果同步报告给浏览器去显示。这个会导致报错信息不及时。
+        将async设置为false后，就要求webpack等待fork-ts-checker-webpack-plugin进程返回信息。不过这样做也可能会拖慢整个webpack的转译等待时间。这就要看怎么选择了
+        */
+        new ForkTsCheckerWebpackPlugin({
+            async: true,
+            eslint: ESLintOptions
+        }),
+        new ForkTsCheckerNotifierWebpackPlugin({
+            title: 'webpack TypeScript',
+            alwaysNotify: false
+        }),
         new HtmlWebpackPlugin({ // 处理 html，配置多个会生成多个 html
             title: 'React学习', // html的标题
             filename: './index.html', // 生成的 html 文件
@@ -61,13 +81,7 @@ module.exports = {
                 removeRedundantAttributes: true, // 删除多余的属性
                 collapseWhitespace: true // 删除空白符与换行符
             }
-        }),
-        new ForkTsCheckerWebpackPlugin({
-            async: true,
-            eslint: ESLintOptions
         })
-        // ,
-        // new ESLintWebpackPlugin(ESLintOptions)
     ],
     output: {
         path: OUTPUTPATH,      // 出口路径
@@ -98,6 +112,10 @@ module.exports = {
                     options: {
                         // 关闭类型校验：disable type checker - we will use it in fork plugin
                         transpileOnly: true
+                        /*
+                        transpileOnly: false 单进程，只使用ts-loader进行'转译'和‘类型检查’(单进程因为是同步所以webpack可以收集错误信息，并通过dev-server反馈到浏览器)
+                        transpileOnly: true 则关闭类型检查，即只进行转译
+                        */
                     }
                 }],
                 exclude: /node_modules/
@@ -107,6 +125,8 @@ module.exports = {
                 include: /src/,
                 use: [
                     {
+                        // fallback to style-loader in development
+                        // loader: process.env.NODE_ENV !== 'production' ? 'style-loader': MiniCssExtractPlugin.loader,
                         loader: 'style-loader'
                     },
                     {
