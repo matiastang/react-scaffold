@@ -2,10 +2,11 @@
  * @Author: tangdaoyong
  * @Date: 2020-11-24 17:24:53
  * @LastEditors: tangdaoyong
- * @LastEditTime: 2021-04-23 17:05:12
+ * @LastEditTime: 2021-04-26 15:48:44
  * @Description: webpack配置
  */
 const path = require('path');
+const webpack = require('webpack');
 // 引入插件
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
@@ -39,6 +40,10 @@ const ESLintOptions = {
     // threads: false, // 将在线程池中运行lint任务。除非指定数字，否则池大小是自动的。
 };
 
+/* - 自定义webpack插件 - */
+
+const WebpackCheckerCss = require('./src/plugins/ts-checker-css');
+
 module.exports = {
     mode: process.env.NODE_ENV,
     entry: {
@@ -47,9 +52,9 @@ module.exports = {
     devtool: 'inline-source-map',
     plugins: [
         // 为了避免webpack因为生成众多的scss.d.ts而导致速度变慢
-        // new webpack.WatchIgnorePlugin({
-        //     paths: [/.css\.d\.ts$/, /.scss\.d\.ts$/, /.less\.d\.ts$/]
-        // }),
+        new webpack.WatchIgnorePlugin({
+            paths: [/.css\.d\.ts$/, /.scss\.d\.ts$/, /.less\.d\.ts$/]
+        }),
         new CleanWebpackPlugin({ cleanStaleWebpackAssets: false }),
         /*
         [fork-ts-checker-webpack-plugin报错信息不及时](https://segmentfault.com/q/1010000019545436)
@@ -57,6 +62,10 @@ module.exports = {
         因为fork-ts-checker-webpack-plugin是在单独的进程跑的，所以它的错误或警告信息是异步回传给到webpack进程的。而当webpack自己处理完转译任务后，会将结果同步报告给浏览器去显示。这个会导致报错信息不及时。
         将async设置为false后，就要求webpack等待fork-ts-checker-webpack-plugin进程返回信息。不过这样做也可能会拖慢整个webpack的转译等待时间。这就要看怎么选择了
         */
+        // new WebpackCheckerCss({
+        //     async: true,
+        //     eslint: ESLintOptions
+        // }),
         new ForkTsCheckerWebpackPlugin({
             async: true,
             eslint: ESLintOptions

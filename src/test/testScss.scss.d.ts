@@ -1,5 +1,6 @@
 declare namespace TestScssScssNamespace {
   export interface ITestScssScss {
+    bg: string;
     testScss: string;
   }
 }

@@ -2,7 +2,7 @@
  * @Author: tangdaoyong
  * @Date: 2021-04-22 17:28:56
  * @LastEditors: tangdaoyong
- * @LastEditTime: 2021-04-23 16:03:52
+ * @LastEditTime: 2021-04-26 14:08:58
  * @Description: webpack开发配置
  */
 const path = require('path');
@@ -249,5 +249,3 @@ tsCheckerHooks.error.tap('yourListenerName', (error) => {
 tsCheckerHooks.issues.tap('yourListenerName', () => {
     console.log('issues');
 });
-
-module.exports = ForkTsCheckerWebpackPlugin;
