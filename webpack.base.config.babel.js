@@ -1,38 +1,28 @@
 /*
  * @Author: tangdaoyong
- * @Date: 2021-04-22 17:28:08
+ * @Date: 2021-05-26 16:49:10
  * @LastEditors: tangdaoyong
- * @LastEditTime: 2021-05-26 16:52:07
- * @Description: webpack基础配置
+ * @LastEditTime: 2021-05-26 18:03:02
+ * @Description: file content
  */
+import path from 'path';
+import webpack from 'webpack';
+
+/* - 常量 - */
+
 /*
- * @Author: tangdaoyong
- * @Date: 2020-11-24 17:24:53
- * @LastEditors: tangdaoyong
- * @LastEditTime: 2021-04-26 15:48:44
- * @Description: webpack配置
- */
-const path = require('path');
-const webpack = require('webpack');
-// 引入插件
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
-const ForkTsCheckerNotifierWebpackPlugin = require('fork-ts-checker-notifier-webpack-plugin');
-/*
-parallel-webpack：它允许在一个 worker 池中运行 compilation。并行构建
-cache-loader：可以在多个 compilation 之间共享缓存。
-生成 HTML 模版 (html-webpack-plugin)
-自动压缩图片 (imagemin-webpack-plugin) 
+__dirname: 总是返回被执行的 js 所在文件夹的绝对路径
+__filename: 总是返回被执行的 js 的绝对路径
+process.cwd(): 总是返回运行 node 命令时所在的文件夹的绝对路径
+./: 跟 process.cwd() 一样、一样、一样的吗？
 */
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-
-// 常量
-
 // 入口
 const ENTRYPATH = path.resolve(__dirname, './src/index.tsx');
+// const ENTRYPATH = path.resolve(__dirname, '../../src/index.tsx');
+console.log(ENTRYPATH);
 // 出口
 const OUTPUTPATH = path.resolve(__dirname, './dist');
+// const OUTPUTPATH = path.resolve(__dirname, '../../dist');
 
 // ESLint 选项
 const ESLintOptions = {
@@ -49,30 +39,50 @@ const ESLintOptions = {
 
 /* - 自定义webpack插件 - */
 
-const WebpackCheckerCss = require('./src/plugins/ts-checker-css');
+// import RemoveUnusedFilesWebpackPlugin from './src/plugin/remove-unused-files-webpack-plugin';// 清除无用文件
 
-module.exports = {
+/* - webpack插件 - */
+
+import { CleanWebpackPlugin } from 'clean-webpack-plugin';// 清理构建文件夹
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
+import ForkTsCheckerNotifierWebpackPlugin from 'fork-ts-checker-notifier-webpack-plugin';
+import RemoveUnusedFilesWebpackPlugin from 'remove-unused-files-webpack-plugin';
+/*
+parallel-webpack：它允许在一个 worker 池中运行 compilation。并行构建
+cache-loader：可以在多个 compilation 之间共享缓存。
+生成 HTML 模版 (html-webpack-plugin)
+自动压缩图片 (imagemin-webpack-plugin) 
+*/
+// const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+
+export default {
     mode: process.env.NODE_ENV,
-    entry: {
+    entry: { // 入口
         app: ENTRYPATH
     },
     devtool: 'inline-source-map',
     plugins: [
+        // 清理构建文件夹
+        new CleanWebpackPlugin(),
+        // 清除无用文件
+        new RemoveUnusedFilesWebpackPlugin({
+            patterns: ['src/**'],
+            removeUnused: false
+        }),
         // 为了避免webpack因为生成众多的scss.d.ts而导致速度变慢
         new webpack.WatchIgnorePlugin({
             paths: [/.css\.d\.ts$/, /.scss\.d\.ts$/, /.less\.d\.ts$/]
         }),
-        new CleanWebpackPlugin({ cleanStaleWebpackAssets: false }),
+        new CleanWebpackPlugin({
+            cleanStaleWebpackAssets: false
+        }),
         /*
         [fork-ts-checker-webpack-plugin报错信息不及时](https://segmentfault.com/q/1010000019545436)
         fork一个进程进行检查，并设置async为false，将错误信息反馈给webpack
         因为fork-ts-checker-webpack-plugin是在单独的进程跑的，所以它的错误或警告信息是异步回传给到webpack进程的。而当webpack自己处理完转译任务后，会将结果同步报告给浏览器去显示。这个会导致报错信息不及时。
         将async设置为false后，就要求webpack等待fork-ts-checker-webpack-plugin进程返回信息。不过这样做也可能会拖慢整个webpack的转译等待时间。这就要看怎么选择了
         */
-        // new WebpackCheckerCss({
-        //     async: true,
-        //     eslint: ESLintOptions
-        // }),
         new ForkTsCheckerWebpackPlugin({
             async: true,
             eslint: ESLintOptions
@@ -100,12 +110,24 @@ module.exports = {
         })
     ],
     output: {
-        path: OUTPUTPATH,      // 出口路径
+        path: OUTPUTPATH, // 出口路径
         filename: '[name].bundle.js'
     },
     resolve: {
         extensions: ['*', '.tsx', '.ts', '.js', '.jsx', '.svg', '.css', '.scss', '.less', '.vert', '.tesc', '.tese', '.geom', '.frag', '.comp'],
+        // webpack5 中移除了nodejs核心模块的polyfill自动引入，需要手动引入。
+        fallback: {
+            'path': require.resolve('path-browserify'),
+            'assert': require.resolve('assert/'),
+            'stream': require.resolve('stream-browserify'),
+            'util': require.resolve('util/'),
+            'tty': require.resolve('tty-browserify'),
+            'buffer': require.resolve('buffer/'),
+            'crypto': require.resolve('crypto-browserify'),
+            'os': require.resolve('os-browserify/browser')
+        },
         alias: { // 别名
+            root: path.resolve(__dirname, 'src/'),
             services: path.resolve(__dirname, 'src/services/'),
             glslShader: path.resolve(__dirname, 'src/WebGL/shader/')
         }
@@ -116,7 +138,12 @@ module.exports = {
                 test: /\.js|jsx$/,            // 匹配文件
                 exclude: /node_modules/,      // 排除文件夹
                 use: [
-                    { loader: 'babel-loader' } // babel 加载器
+                    {
+                        loader: 'babel-loader',
+                        options: {
+                            presets: ['@babel/preset-env']
+                        }
+                    } // babel 加载器
                 ]
             },
             {
@@ -165,17 +192,17 @@ module.exports = {
                 ]
             },
             {
-                test: /\.(s(a|c)|le)ss$/,
+                test: /\.less$/,
                 include: /src/,
                 use: [{
-                    loader: 'style-loader'
+                    loader: 'style-loader'// 将 JS 字符串生成为 style 节点
                 }, {
                     loader: '@teamsupercell/typings-for-css-modules-loader', // @teamsupercell/typings-for-css-modules-loader 生成样式的类型声明文件 typings-for-css-modules-loader让我们可以像使用js模块一样引入css和scss文件。
                     options: {
                         formatter: 'prettier'
                     }
                 }, {
-                    loader: 'css-loader',
+                    loader: 'css-loader', // 将 CSS 转化成 CommonJS 模块
                     options: {
                         modules: {
                             localIdentName: '[local]_[hash:base64:5]'
@@ -184,7 +211,32 @@ module.exports = {
                         importLoaders: 2
                     }
                 }, {
-                    loader: 'sass-loader'// 处理`.scss`、`.less`文件，需要依赖`node-sass`包。
+                    loader: 'less-loader'// 将 Less 编译成 CSS
+                }, {
+                    loader: 'postcss-loader'
+                }]
+            },
+            {
+                test: /\.styl$/,
+                include: /src/,
+                use: [{
+                    loader: 'style-loader'// 将 JS 字符串生成为 style 节点
+                }, {
+                    loader: '@teamsupercell/typings-for-css-modules-loader', // @teamsupercell/typings-for-css-modules-loader 生成样式的类型声明文件 typings-for-css-modules-loader让我们可以像使用js模块一样引入css和scss文件。
+                    options: {
+                        formatter: 'prettier'
+                    }
+                }, {
+                    loader: 'css-loader', // 将 CSS 转化成 CommonJS 模块
+                    options: {
+                        modules: {
+                            localIdentName: '[local]_[hash:base64:5]'
+                        },
+                        sourceMap: true,
+                        importLoaders: 2
+                    }
+                }, {
+                    loader: 'stylus-loader'// 将 Stylus 编译成 CSS
                 }, {
                     loader: 'postcss-loader'
                 }]
@@ -215,11 +267,12 @@ module.exports = {
                         /*
                         默认使用 Node Sass
                         使用 dart-sass 代替 node-sass，因为后者已经过时了而且很难安装。
+                        dart-sass@1.25.0: This package has been renamed to 'sass'.
                         */
-                        implementation: require('dart-sass')
+                        implementation: require('sass')
                     }
                 }, {
-                    loader: 'postcss-loader'
+                    loader: 'postcss-loader'// 浏览器兼容前缀
                 }]
             },
             {
